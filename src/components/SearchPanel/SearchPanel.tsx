@@ -2,8 +2,20 @@ import { useState } from "react";
 import styles from "./styles.module.css";
 import ads from "../../ads.json";
 
+interface IAdsCard {
+  id: number
+  title: string;
+  img: string;
+  price: number;
+  description: string;
+  url: string;
+  city: string;
+  region: string;
+  date: string;
+}
+
 interface ISearchPanel {
-  setAdsArray: void;
+  setAdsArray: (newAds: IAdsCard[]) => void;
 }
 
 const SearchPanel = (props: ISearchPanel) => {
