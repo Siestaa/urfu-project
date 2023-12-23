@@ -230,7 +230,7 @@ const SearchPanel = (props: ISearchPanel) => {
           <ul className={`${styles.sortList} ${hideSortList && styles.sortList_hide}`}>
             {sortArray.map((item: string) => (
               <li
-                id={Number(sortArray.indexOf(item))}
+                id={String(sortArray.indexOf(item))}
                 className={styles.sortItem}
                 onClick={() => {
                   setCurrentSort(item)

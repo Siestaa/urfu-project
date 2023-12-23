@@ -21,15 +21,15 @@ interface IAdsPanel {
 }
 
 const AdsPanel = (props: IAdsPanel) => {
-  const ads: IAdsPanel | undefined = props.items;
+  const ads: IAdsCard[] | undefined = props.items;
   const [adsExist, setAdsExist] = useState<boolean>(false);
   const [averagePrice, setAveragePrice] = useState<number>(0);
   useEffect(() => {
     let sumPrices: number = 0
-    ads?.map((item: IAdsCard) => {
+    if (ads instanceof Array) ads?.map((item: IAdsCard) => {
       sumPrices = sumPrices + item.price
     })
-    setAveragePrice(sumPrices / ads?.length);
+    if (ads?.length) setAveragePrice(sumPrices / ads.length);
   },[ads])
 
   useEffect(() => {
