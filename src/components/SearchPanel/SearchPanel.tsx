@@ -3,7 +3,7 @@ import styles from "./styles.module.css";
 import ads from "../../ads.json";
 
 interface IAdsCard {
-  id: number
+  id: number;
   title: string;
   img: string;
   price: number;
@@ -15,7 +15,12 @@ interface IAdsCard {
 }
 
 interface ISearchPanel {
-  setAdsArray: (newAds: IAdsCard[]) => void;
+  setAdsArray: (newAds: IAdsCard[], averagePrice: number) => void;
+}
+
+interface ISortItem {
+  id: string;
+  text: string;
 }
 
 const SearchPanel = (props: ISearchPanel) => {
@@ -24,42 +29,68 @@ const SearchPanel = (props: ISearchPanel) => {
   const [priceToValue, setPriceToValue] = useState<number | undefined>();
   const [city, setCity] = useState<string>("");
   const [region, setRegion] = useState<string>("");
-  const [rangePrice, setRangePrice] = useState<number | undefined>();
-  const sortArray = [
-    "Сначала новые",
-    "Сначала старые",
-    "Сначала дорогие",
-    "Сначала дешевые",
+  const [rangePrice, setRangePrice] = useState<string>("0%");
+  const sortArray: ISortItem[] = [
+    { id: "0", text: "Сначала новые" },
+    { id: "1", text: "Сначала старые" },
+    { id: "2", text: "Сначала дорогие" },
+    { id: "3", text: "Сначала дешевые" },
   ];
-  const [currentSort, setCurrentSort] = useState<string>(sortArray[0]);
+  const [currentSort, setCurrentSort] = useState<ISortItem>(sortArray[0]);
   const [hideSortList, setHideSortList] = useState<boolean>(true);
   const adsArray = [...ads.adsArray];
+  const averagePrice: number = Number(
+    (
+      adsArray.reduce((result, item) => result + item.price, 0) /
+      adsArray.length
+    ).toFixed(2)
+  );
 
   const handleFilter = () => {
     const filterValues = [...document.querySelectorAll("input")];
     let filteredArray = [...adsArray];
     filterValues.map((filter) => {
-      if (filter.value && filter.value !== "0") {
+      if (filter.value && filter.value !== "0" && filter.value !== "0%") {
         switch (filter.name) {
           case "search":
             filteredArray = adsArray.filter((item) =>
-              item.title.includes(filter.value)
+              new RegExp(filter.value, "i").test(item.title)
             );
             break;
           case "priceFrom":
-            filteredArray = adsArray.filter(
+            filteredArray = filteredArray.filter(
               (item) => item.price >= Number(filter.value)
             );
             break;
           case "priceTo":
-            filteredArray = adsArray.filter(
+            filteredArray = filteredArray.filter(
               (item) => item.price <= Number(filter.value)
+            );
+            break;
+          case "rangePrice":
+            filteredArray = filteredArray.filter(
+              (item) =>
+                item.price <=
+                  Number((1 + parseInt(filter.value) / 100) * averagePrice) &&
+                item.price >=
+                  Number((1 - parseInt(filter.value) / 100) * averagePrice)
+            );
+
+            break;
+          case "city":
+            filteredArray = filteredArray.filter((item) =>
+              new RegExp(filter.value, "i").test(item.city)
+            );
+            break;
+          case "region":
+            filteredArray = filteredArray.filter((item) =>
+              new RegExp(filter.value, "i").test(item.region)
             );
             break;
         }
       }
     });
-    props.setAdsArray(filteredArray);
+    props.setAdsArray(filteredArray, averagePrice);
   };
 
   return (
@@ -106,7 +137,11 @@ const SearchPanel = (props: ISearchPanel) => {
               type="number"
               placeholder="От"
               value={priceFromValue}
-              onChange={(e) => setPriceFromValue(Number(e.target.value))}
+              onChange={(e) =>
+                Number(e.target.value) === 0
+                  ? setPriceFromValue(undefined)
+                  : setPriceFromValue(Number(e.target.value))
+              }
             />
             <svg
               width="20"
@@ -127,7 +162,11 @@ const SearchPanel = (props: ISearchPanel) => {
               type="number"
               placeholder="До"
               value={priceToValue}
-              onChange={(e) => setPriceToValue(Number(e.target.value))}
+              onChange={(e) =>
+                Number(e.target.value) === 0
+                  ? setPriceToValue(undefined)
+                  : setPriceToValue(Number(e.target.value))
+              }
             />
             <svg
               width="20"
@@ -152,7 +191,11 @@ const SearchPanel = (props: ISearchPanel) => {
               type="text"
               placeholder="% отклонения"
               value={rangePrice}
-              onChange={(e) => setRangePrice(Number(e.target.value))}
+              onChange={(e) => {
+                const rangeValue =
+                  e.target.value.replace(/[^\d]/g, "").replace(/^0/, "") + "%";
+                setRangePrice(rangeValue);
+              }}
             />
             <svg
               width="20"
@@ -222,8 +265,11 @@ const SearchPanel = (props: ISearchPanel) => {
           value="Поиск"
         />
         <div className={styles.sortContainer}>
-          <p className={styles.sortCurrentItem} onClick={() => setHideSortList(!hideSortList)}>
-            {currentSort}
+          <p
+            className={styles.sortCurrentItem}
+            onClick={() => setHideSortList(!hideSortList)}
+          >
+            {currentSort.text}
             <svg
               width="16px"
               height="16px"
@@ -239,17 +285,21 @@ const SearchPanel = (props: ISearchPanel) => {
               />
             </svg>
           </p>
-          <ul className={`${styles.sortList} ${hideSortList && styles.sortList_hide}`}>
-            {sortArray.map((item: string) => (
+          <ul
+            className={`${styles.sortList} ${
+              hideSortList && styles.sortList_hide
+            }`}
+          >
+            {sortArray.map((item) => (
               <li
-                id={String(sortArray.indexOf(item))}
+                key={item.id}
                 className={styles.sortItem}
                 onClick={() => {
-                  setCurrentSort(item)
-                  setHideSortList(true)
+                  setCurrentSort(item);
+                  setHideSortList(true);
                 }}
               >
-                {item}
+                {item.text}
               </li>
             ))}
           </ul>

@@ -18,19 +18,13 @@ interface IAdsCard {
 
 interface IAdsPanel {
   items?: IAdsCard[];
+  averagePrice: number;
 }
 
 const AdsPanel = (props: IAdsPanel) => {
   const ads: IAdsCard[] | undefined = props.items;
   const [adsExist, setAdsExist] = useState<boolean>(false);
-  const [averagePrice, setAveragePrice] = useState<number>(0);
-  useEffect(() => {
-    let sumPrices: number = 0
-    if (ads instanceof Array) ads?.map((item: IAdsCard) => {
-      sumPrices = sumPrices + item.price
-    })
-    if (ads?.length) setAveragePrice(sumPrices / ads.length);
-  },[ads])
+
 
   useEffect(() => {
     if (props.items) setAdsExist(true);
@@ -56,7 +50,7 @@ const AdsPanel = (props: IAdsPanel) => {
                   city={item.city}
                   region={item.region}
                   date={item.date}
-                  averagePrice={averagePrice}
+                  averagePrice={props.averagePrice}
                 />
               </li>
             ))}

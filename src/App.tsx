@@ -16,16 +16,18 @@ interface IAdsCard {
 }
 
 const App = () => {
-  const [adsArray, setAdsArray] = useState<IAdsCard[] | undefined>()
+  const [adsArray, setAdsArray] = useState<IAdsCard[] | undefined>();
+  const [averagePrice, setAveragePrice] = useState<number>(0);
 
-  const handleSetAds = (newAds: IAdsCard[]) => {
+  const handleSetAds = (newAds: IAdsCard[], averagePrice: number) => {
     setAdsArray(newAds)
+    setAveragePrice(averagePrice)
   }
 
   return (
     <>
       <SearchPanel setAdsArray={handleSetAds} />
-      <AdsPanel items={adsArray}/>      
+      <AdsPanel items={adsArray} averagePrice={averagePrice}/>      
     </>
   );
 }
